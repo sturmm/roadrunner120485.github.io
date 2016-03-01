@@ -266,7 +266,8 @@ $ sudo apt-get install docker-engine
 
 #### Konfiguration
 
-Nachdem wir nun alle notwendigen Softwarepakete installiert haben, machen wir uns an die Konfiguration. Zuerst müssen wir die interne IP des Master Nodes in `/etc/mesos/zk` eintragen:
+Nachdem wir nun alle notwendigen Softwarepakete installiert haben, machen wir uns an die Konfiguration. Zuerst müssen wir 
+die interne IP des Master Nodes in `/etc/mesos/zk` eintragen:
 
 ```bash
 $ echo 'zk://172.28.128.xx:2181/mesos' | sudo tee /etc/mesos/zk
@@ -284,16 +285,43 @@ Und zuletzt den Mesos-Slave-Prozess neu starten:
 $ sudo service mesos-slave restart
 ```
 
-Ein Blick auf den Punkt **Slaves** im Mesos Webinterface verrät uns nun, ob unser erster Slave sich beim Master angemeldet
+Ein Blick auf den Punkt **Slaves** im Mesos Webinterface verrät uns nun, ob sich der Slave beim Master angemeldet
 hat. Wenn dies der Fall ist, können wir vom Slave ein *AMI* ziehen und damit unser Cluster beliebig skalieren.
 
 ### 4. Starten eines Docker-Containers
+
+Um nun einen Docker Container zu starten kann man entweder die REST API oder das Webinterface von Marathon verwenden.
+Wir verwenden an dieser Stelle die REST API indem wir die folgende Konfiguration mit einem beliebigen REST Client 
+per `POST` an die URL `http://<public-master-ip>/v2/apps` senden:          
+ 
+```javascript
+{
+    "id": "jenkins", 
+    "container": {
+      "docker": {
+        "image": "mongodb",
+        "network": "BRIDGE",
+        "portMappings": [
+          {"containerPort": 27017, "servicePort": 27017},
+        ]
+      }
+    },
+    "cpus": 0.5,
+    "mem": 256.0,
+    "instances": 1
+}
+```
+
+Der Container läuft jetzt natürlich auf einem beliebingen Slave, welche wiederum keine öffentliche IP haben. Daher ist der 
+Zugriff auf Datenbank nicht ohne weiteres möglich. Das ist am Ende Sache der Orchestration und Service Discovery. Wir können
+jedoch verifizieren dass unser Container gestartet wurde indem wir die Slaves besuchen und mit `docker ps` nachsehen
+wo der Container gestartet wurde. 
 
 ### High Availability
 
 
 
-## Links und Quellen
+## Links und Quellen 
 
 https://zookeeper.apache.org/doc/r3.4.3/zookeeperAdmin.html
 
