@@ -9,9 +9,9 @@
 title: roadrunner120485's TechBlog
 # email: roadrunner120485@users.noreply.github.com
 description: > # this means to ignore newlines until "baseurl:"
-  Write an awesome description for your new site here. You can edit this
-  line in _config.yml. It will appear in your document head meta (for
-  Google search results) and in your feed.xml site description.
+  Welcome on my tech blog. Here I will to publish articles about
+  software and system architectures, tools and frameworks relating
+  cloud and cluster computing.
 baseurl: ""
 url: "http://roadrunner120485.github.io/" # the base hostname & protocol for your site
 
@@ -19,8 +19,8 @@ twitter_username: roadrunner12048
 github_username:  roadrunner120485
 
 # Build settings
-markdown: redcarpet
-redcarpet:
-  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data", "footnotes"]
+# markdown: redcarpet
+# redcarpet:
+#   extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data", "footnotes"]
 gems:
   - jemoji

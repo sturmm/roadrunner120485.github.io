@@ -5,7 +5,7 @@ date:   2016-02-09 22:45:18 +0100
 categories: mesos marathon aws docker cluster
 ---
  
-Es ist wieder Urlaubszeit und das heißt: Zeit zum spielen. Dieses mal habe ich mich damit beschäftigt einen skalierbaren 
+Es ist wieder Urlaubszeit und das heißt: Zeit zum spielen. Dieses mal habe ich mich damit beschäftigt, einen skalierbaren 
 Mesos-Cluster mit Marathon und Docker in AWS aufzusetzen. Nun kann man sich fragen, warum man Mesos in AWS aufsetzen möchte,
 wo man durch AWS an sich schon Resourcen über verschiedene EC2 Instanzen verteilen und begrenzen kann...
 
@@ -13,7 +13,7 @@ wo man durch AWS an sich schon Resourcen über verschiedene EC2 Instanzen vertei
  * man kann, je nach Last, die Anzahl der Mesos-Slaves dynamisch erhöhen oder reduzieren
  * man kann eine bessere Auslatung der AWS Instanzen erreichen um Kosten zu reduzieren [QUELLE]
  * man kann im Rahmen des AWS Free Tier (fast) kostenlos einen Cluster mit kleinen EC2 Instanzen aufsetzen
- * man kann damit die "Volumen-Begrenzte" LTE-Flatrate der Schwiegereltern schonen
+ * man kann - verglichen zu lokalen VMs mit Vagrant oder Docker Containern - die "Volumen-Begrenzte" LTE-Flatrate der Schwiegereltern schonen
  
  
 ## Die Grundidee
@@ -87,7 +87,7 @@ in die *Routing Table* für dieses Subnet eingetragen werden:
 <br>
 Jetzt sollten wir uns per `ssh` mit unserem Keyfile einloggen können und `ping` ein Ergebnis zurückliefern:
   
-```bash
+~~~~~~~~
 $ ssh -i <keyfile.pem> ubuntu@<public-ip>
 $ ping -c 1 ubuntu.com
   PING ubuntu.com (91.189.94.40) 56(84) bytes of data.
@@ -96,7 +96,8 @@ $ ping -c 1 ubuntu.com
   --- ubuntu.com ping statistics ---
   1 packets transmitted, 1 received, 0% packet loss, time 0ms
   rtt min/avg/max/mdev = 12.633/12.633/12.633/0.000 ms
-```
+~~~~~~~~
+{: .language-bash}
 
 #### Installation von Zookeeper, Mesos & Marathon 
 
@@ -104,19 +105,21 @@ Für das Setup von Zookeeper, Mesos und Marathon folgen wir einfach dem Ubuntu-G
  
 Zuerst installieren fügen wir Paket-Repositories von Mesosphere zu unserem Paketmanager hinzu:
 
-```bash
+~~~~~~~~
 # Setup
 $ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv E56151BF
 # Add the repository
 $ echo "deb http://repos.mesosphere.com/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/mesosphere.list
 $ sudo apt-get -y update
-```
+~~~~~~~~
+{: .language-bash}
  
 Anschließend laden installieren wir Zookeeper, Mesos und Marathon:
  
-```bash
+~~~~~~~~
 $ sudo apt-get -y install mesos marathon
-```
+~~~~~~~~
+{: .language-bash}
 
 Zookeeper wird als transitive Abhängigkeit automatisch installiert.
 #### Konfiguration
@@ -129,18 +132,20 @@ Wir beginnen mit Zookeeper. Da wir zum Testen
 lediglich eine Master-Instanz aufsetzen wollen brauchen wir für Zookeeper keine Instanz-Id vergeben und lediglich eine 
 Basiskonfiguration in `/etc/zookeeper/conf/zoo.cfg`:
 
-```bash
+~~~~~~~~
 tickTime=2000
 dataDir=/var/lib/zookeeper
 clientPort=2181
-```
+~~~~~~~~
+{: .language-bash}
 
 Wie ihr vielleicht bemerkt habt, sind diese Einstellungen default. Somit haben wir nichts zu tun. Zookeeper bereit und 
 kann gestartet werden:
 
-```bash
+~~~~~~~~
 $ sudo service zookeeper restart
-```
+~~~~~~~~
+{: .language-bash}
 
 Man kann natürlich auch manuell OpenJDK 7 installieren, die letzte Version von Zookeper laden, konfigurieren und starten. 
 Über das Mesosphere Repository bekommen wir jedoch das ganze Setup als Systemdienst geschenkt.
@@ -149,26 +154,27 @@ Man kann natürlich auch manuell OpenJDK 7 installieren, die letzte Version von 
 
 Nun ist Mesos an der Reihe. Als erstes tragen wir die lokale Zookeeper-Instanz über die VPC interne IP in `/etc/mesos/zk` ein:
 
-```bash
+~~~~~~~~
 zk://172.28.128.xx:2181/mesos
-```
+~~~~~~~~
 
 Anschließend konfigurieren wir das Quorum - also die Anzahl an Mesos-Master Nodes, die notwendig ist um einen Leader 
 zu wählen - in der Datei ´/etc/mesos-master/quorum´:
 
-```
+~~~~~~~~
 1
-```
+~~~~~~~~
 
 Die Zahl beträgt optimalerweise den aufgerundeten Wert der Division der Anzahl an Master-Nodes durch zwei. Also bei drei Master 
 Nodes ist das Quorum 2, bei fünf Nodes 3, bei sieben Nodes 4 usw.
     
 Zuletzt müssen wir die *Public IP* der Instanz als Hostname in `/etc/mesos-master/hostname` eintragen und anschließend den Mesos-Master starten:
 
-```bash
+~~~~~~~~
 $ curl http://169.254.169.254/latest/meta-data/public-ipv4/ | sudo tee /etc/mesos-master/hostname
 $ sudo service mesos-master restart
-```
+~~~~~~~~
+{: .language-bash}
 
 Nach kurzer Wartezeit sollte das Webinterface von Mesos unter *http://\<public-ip\>:5050* erreichbar sein:
 
@@ -178,10 +184,11 @@ Nach kurzer Wartezeit sollte das Webinterface von Mesos unter *http://\<public-i
 
 Für Marathon müssen wir lediglich den Hostname in `/etc/marathon/conf/hostname` eintragen und starten:
 
-```bash
+~~~~~~~~
 $ curl http://169.254.169.254/latest/meta-data/public-ipv4/ | sudo tee /etc/marathon/conf/hostname
 $ sudo service marathon restart
-```
+~~~~~~~~
+{: .language-bash}
 
 Anschließend sollten wir im Mesos-Webinterface unter **Frameworks** einen Eintrag für Marathon finden und das Marathon-Webinterface 
 unter *http://\<public-ip\>:8080/* aufrufen können: 
@@ -227,7 +234,7 @@ ein und installieren Mesos erneut via `apt-get`.
 
 Dann deaktivieren wir den Zookeeper und den Mesos-Master Autostart:
 
-```bash
+~~~~~~~~
 # disable Zookeeper
 $ sudo service zookeeper stop
 $ echo "manual" | sudo tee /etc/init/zookeeper.override
@@ -235,7 +242,8 @@ $ echo "manual" | sudo tee /etc/init/zookeeper.override
 # disable Mesos Master
 $ sudo service mesos-master stop
 $ echo "manual" | sudo tee /etc/init/mesos-master.override
-```
+~~~~~~~~
+{: .language-bash}
 
 ##### Docker
 
@@ -243,7 +251,7 @@ Wenn wir mit Marathon Docker Container schedulen wollen müssen wir auf jedem Sl
 Docker aufsetzen. Dazu halten wir uns an das Tutorial von Docker[^4]. Wir starten damit das Repository für den Paketmanager
 aufzusetzen:
 
-```bash
+~~~~~~~~
 # make https repos available
 $ apt-get install apt-transport-https ca-certificates
 
@@ -255,35 +263,40 @@ $ echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" | sudo tee /e
 
 # update
 $ apt-get update
-```
+~~~~~~~~
+{: .language-bash}
 
 Anschließend installieren wir Docker:
 
-```bash
+~~~~~~~~
 # install docker
 $ sudo apt-get install docker-engine
-```
+~~~~~~~~
+{: .language-bash}
 
 #### Konfiguration
 
 Nachdem wir nun alle notwendigen Softwarepakete installiert haben, machen wir uns an die Konfiguration. Zuerst müssen wir 
 die interne IP des Master Nodes in `/etc/mesos/zk` eintragen:
 
-```bash
+~~~~~~~~
 $ echo 'zk://172.28.128.xx:2181/mesos' | sudo tee /etc/mesos/zk
-```
+~~~~~~~~
+{: .language-bash}
 
 Anschließend müssen wir Docker als Container-Eingine in `/etc/mesos-slave/containerizers` eintragen:
 
-```bash
+~~~~~~~~
 $ echo 'docker,mesos' | sudo tee /etc/mesos-slave/containerizers
-```
+~~~~~~~~
+{: .language-bash}
 
 Und zuletzt den Mesos-Slave-Prozess neu starten:
 
-```bash
+~~~~~~~~
 $ sudo service mesos-slave restart
-```
+~~~~~~~~
+{: .language-bash}
 
 Ein Blick auf den Punkt **Slaves** im Mesos Webinterface verrät uns nun, ob sich der Slave beim Master angemeldet
 hat. Wenn dies der Fall ist, können wir vom Slave ein *AMI* ziehen und damit unser Cluster beliebig skalieren.
@@ -294,7 +307,7 @@ Um nun einen Docker Container zu starten kann man entweder die REST API oder das
 Wir verwenden an dieser Stelle die REST API indem wir die folgende Konfiguration mit einem beliebigen REST Client 
 per `POST` an die URL `http://<public-master-ip>/v2/apps` senden:          
  
-```javascript
+~~~~~~~~
 {
     "id": "jenkins", 
     "container": {
@@ -310,26 +323,46 @@ per `POST` an die URL `http://<public-master-ip>/v2/apps` senden:
     "mem": 256.0,
     "instances": 1
 }
-```
+~~~~~~~~
+{: .language-javascript}
 
 Der Container läuft jetzt natürlich auf einem beliebingen Slave, welche wiederum keine öffentliche IP haben. Daher ist der 
 Zugriff auf Datenbank nicht ohne weiteres möglich. Das ist am Ende Sache der Orchestration und Service Discovery. Wir können
 jedoch verifizieren dass unser Container gestartet wurde indem wir die Slaves besuchen und mit `docker ps` nachsehen
 wo der Container gestartet wurde. 
 
+Alternativ zu Marathon gibt es noch weitere Tools und Frameworks die von Mesos' Resourcenmanagement profitieren können, 
+wie zum Beispiel Spark, Hadoop, Storm, Cassandra, Jenkins uvm.[^5] Und sollte es kein passendes Framework geben, so steht
+eine API zur Entwicklung eigener Frameworks zur Verfügung[^6].
+    
+
 ### High Availability
 
+Um das Cluster hochverfügbar zu machen reichen wenige Anpassungen:
 
+- mehrere Master Nodes in verschiedenen *Availability Zones*
+- verteilen der Slaves über mehrere *Availability Zones* hinweg
+- das AWS NAT Gateways selbst ist hochverfügbar[^7]
+
+{% include image.html url="../../../../../../../../assets/aws_mesos_ha.png" description="" %}
+
+So sind wir auf der sicheren Seite, wenn einzelne Master und Slave Instanzen oder sogar komplette *Availability Zones* wegbrechen.
+
+Was wir nun haben ist eine gute Basis für ein Cluster in dem dynamisch skalierbare Anwendungen laufen können. Damit diese 
+Anwendungen funktionieren sind natürlich aber weiterhin die üblichen Mechanismen wie Orchestration, Service Discovery, Routing etc. notwendig.
 
 ## Links und Quellen 
 
-https://zookeeper.apache.org/doc/r3.4.3/zookeeperAdmin.html
+[^1]: [https://open.mesosphere.com/getting-started/install/](https://open.mesosphere.com/getting-started/install/)
+[^2]: [http://stackoverflow.com/questions/26597521/can-mesos-master-and-slave-nodes-be-deployed-on-the-same-machines](http://stackoverflow.com/questions/26597521/can-mesos-master-and-slave-nodes-be-deployed-on-the-same-machines)
+[^3]: [http://stackoverflow.com/questions/22188444/why-do-we-need-private-subnet-in-vpc](http://stackoverflow.com/questions/22188444/why-do-we-need-private-subnet-in-vpc)
+[^4]: [https://docs.docker.com/engine/installation/linux/ubuntulinux/](https://docs.docker.com/engine/installation/linux/ubuntulinux/)
+[^5]: [https://open.mesosphere.com/frameworks/](https://open.mesosphere.com/frameworks/)
+[^6]: [http://mesos.apache.org/documentation/latest/app-framework-development-guide/](http://mesos.apache.org/documentation/latest/app-framework-development-guide/)
+[^7]: [https://aws.amazon.com/de/blogs/aws/new-managed-nat-network-address-translation-gateway-for-aws/](https://aws.amazon.com/de/blogs/aws/new-managed-nat-network-address-translation-gateway-for-aws/)
 
-http://mesos.apache.org/documentation/latest/
+[Zookeeper Admin Guide](https://zookeeper.apache.org/doc/r3.4.3/zookeeperAdmin.html)
 
-http://docs.aws.amazon.com/de_de/AWSEC2/latest/UserGuide/concepts.html
+[Mesos Documentation](http://mesos.apache.org/documentation/latest/)
 
-[^1]: https://open.mesosphere.com/getting-started/install/
-[^2]: http://stackoverflow.com/questions/26597521/can-mesos-master-and-slave-nodes-be-deployed-on-the-same-machines
-[^3]: http://stackoverflow.com/questions/22188444/why-do-we-need-private-subnet-in-vpc
-[^4]: https://docs.docker.com/engine/installation/linux/ubuntulinux/
+[AWS User Guide](http://docs.aws.amazon.com/de_de/AWSEC2/latest/UserGuide/concepts.html)
