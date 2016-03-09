@@ -11,7 +11,7 @@ wo man durch AWS an sich schon Resourcen über verschiedene EC2 Instanzen vertei
 
  
  * man kann, je nach Last, die Anzahl der Mesos-Slaves dynamisch erhöhen oder reduzieren
- * man kann eine bessere Auslatung der AWS Instanzen erreichen um Kosten zu reduzieren [QUELLE]
+ * man kann eine bessere Auslatung der AWS Instanzen erreichen um Kosten zu reduzieren
  * man kann im Rahmen des AWS Free Tier (fast) kostenlos einen Cluster mit kleinen EC2 Instanzen aufsetzen
  * man kann - verglichen zu lokalen VMs mit Vagrant oder Docker Containern - die "Volumen-Begrenzte" LTE-Flatrate der Schwiegereltern schonen
  
@@ -29,8 +29,7 @@ Wir benötigen also folgende AWS Konfiguration:
  2. ein öffentliches und ein privates Subnet
  3. ein Internetgateway
  4. eine Elastic IP für ein NAT Gateway
- 5. ein [AWS Dokumentation](http://docs.aws.amazon.com/de_de/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html) NAT Gateway, 
-   damit die EC2 Instanzen aus dem privaten Subnet mit "dem Internet" kommunizieren können
+ 5. ein NAT Gateway, damit die EC2 Instanzen aus dem privaten Subnet mit "dem Internet" kommunizieren können [^0]
  6. eine EC2 Instanz mit Public IP im öffentlichen Subnet
  7. und zum "Spaß" zwei EC2 Instanzen im privaten Subnet
  8. diverse Konfigurationen wie ACLs, Security Groups, Routing Tables ...     
@@ -353,6 +352,7 @@ Anwendungen funktionieren sind natürlich aber weiterhin die üblichen Mechanism
 
 ## Links und Quellen 
 
+[^0]: [http://docs.aws.amazon.com/de_de/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html](http://docs.aws.amazon.com/de_de/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html)
 [^1]: [https://open.mesosphere.com/getting-started/install/](https://open.mesosphere.com/getting-started/install/)
 [^2]: [http://stackoverflow.com/questions/26597521/can-mesos-master-and-slave-nodes-be-deployed-on-the-same-machines](http://stackoverflow.com/questions/26597521/can-mesos-master-and-slave-nodes-be-deployed-on-the-same-machines)
 [^3]: [http://stackoverflow.com/questions/22188444/why-do-we-need-private-subnet-in-vpc](http://stackoverflow.com/questions/22188444/why-do-we-need-private-subnet-in-vpc)
