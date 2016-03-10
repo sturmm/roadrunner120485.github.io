@@ -342,6 +342,7 @@ Um das Cluster hochverfügbar zu machen reichen wenige Anpassungen:
 - mehrere Master Nodes in verschiedenen *Availability Zones*
 - verteilen der Slaves über mehrere *Availability Zones* hinweg
 - das AWS NAT Gateways selbst ist hochverfügbar[^7]
+- Zookeeper und Mesos Konfiguration anpassen
 
 {% include image.html url="../../../../../../../../assets/aws_mesos_ha.png" description="" %}
 
